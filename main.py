@@ -16,6 +16,8 @@ def health():
 
 @app.post("/search-confluence")
 async def search_confluence(payload: QueryIn):
+    if not TOKEN:
+        raise HTTPException(status_code=500, detail="CONFLUENCE_TOKEN not set")
     query = (payload.query or "").strip()
     if len(query) < 3:
         raise HTTPException(status_code=400, detail="Query too short")
@@ -29,7 +31,8 @@ async def search_confluence(payload: QueryIn):
             headers={"Authorization": f"Bearer {TOKEN}", "Accept": "application/json"},
         )
     if resp.status_code >= 400:
-        raise HTTPException(status_code=resp.status_code, detail="Search failed")
+        # temporarily surface Confluence response to debug
+        raise HTTPException(status_code=resp.status_code, detail=resp.text)
     data = resp.json()
     results = [
         {
@@ -40,3 +43,4 @@ async def search_confluence(payload: QueryIn):
         for r in data.get("results", [])
     ]
     return {"results": results}
+
