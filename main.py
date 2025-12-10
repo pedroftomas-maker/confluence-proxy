@@ -10,9 +10,13 @@ TOKEN = os.environ.get("CONFLUENCE_TOKEN")
 class QueryIn(BaseModel):
     query: str
 
+@app.get("/")
+def health():
+    return {"status": "ok"}
+
 @app.post("/search-confluence")
 async def search_confluence(payload: QueryIn):
-    query = (payload.query or "").trim()
+    query = (payload.query or "").strip()
     if len(query) < 3:
         raise HTTPException(status_code=400, detail="Query too short")
 
